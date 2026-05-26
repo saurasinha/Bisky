@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "612146326631",
+    "project_id": "first-97043",
+    "storage_bucket": "first-97043.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:612146326631:android:e5f87a5850bff9bc41b8c2",
+        "android_client_info": {
+          "package_name": "com.example.barabar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUd-gH6MVVXghzZxVJg-yBjv1Ify1gZ3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
