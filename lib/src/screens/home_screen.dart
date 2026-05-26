@@ -6,50 +6,36 @@ import 'package:barabar/src/utils.dart';
 import 'package:barabar/src/widgets/common_widgets.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tab colour definitions — matches the screenshot exactly
+// Tab metadata
 // ─────────────────────────────────────────────────────────────────────────────
-class _TabStyle {
-  final String label;
-  final Color activeBg;
+class _TabMeta {
+  final String? label;      // null for the logo tab
+  final bool isLogo;
   final Color activeText;
-  final Color inactiveText;
-  const _TabStyle({
-    required this.label,
-    required this.activeBg,
-    required this.activeText,
-    this.inactiveText = const Color(0xFF444444),
+
+  const _TabMeta({
+    this.label,
+    this.isLogo = false,
+    this.activeText = const Color(0xFF1A1A1A),
   });
 }
 
-const _tabStyles = [
-  _TabStyle(
-    label: 'BISKY',
-    activeBg: Color(0xFFF5C842),   // yellow/saffron pill
-    activeText: Color(0xFFD44FA0), // pink text
-  ),
-  _TabStyle(
-    label: 'Friends',
-    activeBg: Colors.white,
-    activeText: Color(0xFF3A8FD6), // blue
-  ),
-  _TabStyle(
-    label: 'Activity',
-    activeBg: Colors.white,
-    activeText: Color(0xFF1A1A1A), // near-black
-  ),
-  _TabStyle(
-    label: 'Stats',
-    activeBg: Colors.white,
-    activeText: Color(0xFF7B4FD4), // purple
-  ),
+const _tabs = [
+  _TabMeta(isLogo: true,  activeText: Color(0xFFD44FA0)),  // logo tab
+  _TabMeta(label: 'Friends',  activeText: Color(0xFF3A8FD6)),
+  _TabMeta(label: 'Activity', activeText: Color(0xFF1A1A1A)),
+  _TabMeta(label: 'Stats',    activeText: Color(0xFF7B4FD4)),
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HomeScreen
+// The yellow that the cream header uses — active tab must match this exactly
+// so the "merge" works visually.
+const _headerYellow = Color(0xFFFDD835);
+// The white body colour — inactive tab bottom must match this.
+const _bodyWhite    = Color(0xFFF5F0E8);
+
 // ─────────────────────────────────────────────────────────────────────────────
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -61,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: _tabStyles.length, vsync: this);
+    _tab = TabController(length: _tabs.length, vsync: this);
     _tab.addListener(() => setState(() {}));
   }
 
@@ -73,10 +59,11 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext ctx) {
-    final p = kPad(ctx);
+    final p  = kPad(ctx);
+    final idx = _tab.index;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF3C4), // warm cream — entire page bg
+      backgroundColor: _headerYellow,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -84,15 +71,15 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
 
             // ═══════════════════════════════════════════════════════════════
-            // CREAM HEADER — sits directly on the yellow background
+            // YELLOW HEADER
             // ═══════════════════════════════════════════════════════════════
             Padding(
-              padding: EdgeInsets.fromLTRB(p, p * 0.5, p, p * 0.6),
+              padding: EdgeInsets.fromLTRB(p, p * 0.5, p, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
-                  // ── Row 1: greeting + wallet + avatar ───────────────────
+                  // ── Row: greeting + wallet + avatar ─────────────────────
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -112,15 +99,15 @@ class _HomeScreenState extends State<HomeScreen>
                       // wallet badge
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                            horizontal: 12, vertical: 7),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                           boxShadow: const [
                             BoxShadow(
                               color: Color.fromRGBO(0, 0, 0, 0.06),
-                              blurRadius: 10,
-                              offset: Offset(0, 3),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
                             ),
                           ],
                         ),
@@ -128,35 +115,33 @@ class _HomeScreenState extends State<HomeScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
-                              width: 26,
-                              height: 26,
+                              width: 24,
+                              height: 24,
                               decoration: BoxDecoration(
                                 color: const Color(0xFF7B4FD4),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(7),
                               ),
                               child: const Icon(
                                 Icons.account_balance_wallet_rounded,
                                 color: Colors.white,
-                                size: 15,
+                                size: 14,
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              '₹0',
-                              style: TextStyle(
-                                fontSize: sp(ctx, 14),
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF1A1A1A),
-                              ),
-                            ),
+                            Text('₹0',
+                                style: TextStyle(
+                                  fontSize: sp(ctx, 14),
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFF1A1A1A),
+                                )),
                           ],
                         ),
                       ),
                       const SizedBox(width: 10),
                       // avatar
                       Container(
-                        width: 42,
-                        height: 42,
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
@@ -164,61 +149,70 @@ class _HomeScreenState extends State<HomeScreen>
                               color: const Color(0xFFDDDDDD), width: 1.5),
                         ),
                         child: const Icon(Icons.person,
-                            color: Color(0xFF888888), size: 22),
+                            color: Color(0xFF888888), size: 20),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // ── Row 2: pill tabs ────────────────────────────────────
-                  // Only the ACTIVE tab gets the yellow fill.
-                  // Inactive tabs are white pills with coloured text.
+                  // ── BROWSER-STYLE TABS ───────────────────────────────────
+                  // Each tab is a rounded-top rectangle. The active tab:
+                  //   • has white background (matches body)
+                  //   • has NO bottom border → merges into the white body
+                  //   • sits slightly lower to overlap the body border
+                  // Inactive tabs:
+                  //   • transparent bg (shows yellow)
+                  //   • have a bottom border matching the body colour
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
                     child: Row(
-                      children: List.generate(_tabStyles.length, (i) {
-                        final isActive = _tab.index == i;
-                        final s = _tabStyles[i];
-                        return Padding(
-                          padding: EdgeInsets.only(
-                              right: i < _tabStyles.length - 1 ? 8 : 0),
-                          child: GestureDetector(
-                            onTap: () => _tab.animateTo(i),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeOut,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 11),
-                              decoration: BoxDecoration(
-                                color: isActive ? s.activeBg : Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isActive
-                                      ? s.activeBg
-                                      : const Color(0xFFE0E0E0),
-                                  width: 1.5,
-                                ),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color.fromRGBO(0, 0, 0, 0.05),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: List.generate(_tabs.length, (i) {
+                        final isActive = idx == i;
+                        final meta = _tabs[i];
+                        return GestureDetector(
+                          onTap: () => _tab.animateTo(i),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            curve: Curves.easeOut,
+                            // active tab is taller so it visually "lifts"
+                            margin: EdgeInsets.only(
+                              right: 2,
+                              top: isActive ? 0 : 4,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 11),
+                            decoration: BoxDecoration(
+                              color: isActive ? _bodyWhite : Colors.transparent,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
                               ),
-                              child: Text(
-                                s.label,
-                                style: TextStyle(
-                                  fontSize: sp(ctx, 14),
-                                  fontWeight: FontWeight.w800,
+                              border: Border(
+                                top: BorderSide(
                                   color: isActive
-                                      ? s.activeText
-                                      : s.activeText, // always coloured
+                                      ? const Color(0xFFE0D8CC)
+                                      : Colors.transparent,
+                                  width: 1,
                                 ),
+                                left: BorderSide(
+                                  color: isActive
+                                      ? const Color(0xFFE0D8CC)
+                                      : Colors.transparent,
+                                  width: 1,
+                                ),
+                                right: BorderSide(
+                                  color: isActive
+                                      ? const Color(0xFFE0D8CC)
+                                      : Colors.transparent,
+                                  width: 1,
+                                ),
+                                bottom: BorderSide.none, // KEY: no bottom border
                               ),
                             ),
+                            child: _tabChild(ctx, i, isActive, meta),
                           ),
                         );
                       }),
@@ -229,46 +223,31 @@ class _HomeScreenState extends State<HomeScreen>
             ),
 
             // ═══════════════════════════════════════════════════════════════
-            // WHITE BODY — rounded top corners, rest of page
+            // WHITE BODY — seamlessly continues from the active tab
             // ═══════════════════════════════════════════════════════════════
             Expanded(
               child: Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFDF8F0), // very light warm white
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(28),
-                    topRight: Radius.circular(28),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: _bodyWhite,
+                  border: const Border(
+                    top: BorderSide(color: Color(0xFFE0D8CC), width: 1),
                   ),
                 ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(28),
-                    topRight: Radius.circular(28),
-                  ),
-                  child: TabBarView(
-                    controller: _tab,
-                    children: [
-                      _BiskyTab(p: p),
-                      Center(
-                          child: Text('Friends',
-                              style: TextStyle(
-                                  fontSize: sp(ctx, 18),
-                                  fontWeight: FontWeight.w700,
-                                  color: C.textPrimary))),
-                      Center(
-                          child: Text('Activity',
-                              style: TextStyle(
-                                  fontSize: sp(ctx, 18),
-                                  fontWeight: FontWeight.w700,
-                                  color: C.textPrimary))),
-                      Center(
-                          child: Text('Stats',
-                              style: TextStyle(
-                                  fontSize: sp(ctx, 18),
-                                  fontWeight: FontWeight.w700,
-                                  color: C.textPrimary))),
-                    ],
-                  ),
+                child: TabBarView(
+                  controller: _tab,
+                  children: [
+                    _BiskyTab(p: p),
+                    Center(child: Text('Friends',
+                        style: TextStyle(fontSize: sp(ctx, 18),
+                            fontWeight: FontWeight.w700, color: C.textPrimary))),
+                    Center(child: Text('Activity',
+                        style: TextStyle(fontSize: sp(ctx, 18),
+                            fontWeight: FontWeight.w700, color: C.textPrimary))),
+                    Center(child: Text('Stats',
+                        style: TextStyle(fontSize: sp(ctx, 18),
+                            fontWeight: FontWeight.w700, color: C.textPrimary))),
+                  ],
                 ),
               ),
             ),
@@ -277,10 +256,39 @@ class _HomeScreenState extends State<HomeScreen>
       ),
     );
   }
+
+  Widget _tabChild(BuildContext ctx, int i, bool isActive, _TabMeta meta) {
+    if (meta.isLogo) {
+      // Logo tab: show the app logo image
+      return Image.asset(
+        'assets/images/bisky.png',
+        height: 22,
+        // tint the logo to the pink colour when active, grey when not
+        color: isActive ? meta.activeText : const Color(0xFF888888),
+        colorBlendMode: BlendMode.srcIn,
+        errorBuilder: (_, __, ___) => Text(
+          'BISKY',
+          style: TextStyle(
+            fontSize: sp(ctx, 14),
+            fontWeight: FontWeight.w900,
+            color: isActive ? meta.activeText : const Color(0xFF888888),
+          ),
+        ),
+      );
+    }
+    return Text(
+      meta.label!,
+      style: TextStyle(
+        fontSize: sp(ctx, 14),
+        fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+        color: isActive ? meta.activeText : const Color(0xFF888888),
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BISKY tab content (scrollable body inside white section)
+// BISKY tab body
 // ─────────────────────────────────────────────────────────────────────────────
 class _BiskyTab extends StatelessWidget {
   final double p;
@@ -289,217 +297,187 @@ class _BiskyTab extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) {
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(p, p * 0.8, p, p * 1.5),
+      padding: EdgeInsets.fromLTRB(p, p * 0.8, p, p * 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // ── Search + Eid chip ────────────────────────────────────────────
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 50,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(0, 0, 0, 0.04),
-                        blurRadius: 10,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.search,
-                          color: Color(0xFFAAAAAA), size: 20),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Search for "groups"',
-                        style: TextStyle(
-                          color: const Color(0xFFAAAAAA),
-                          fontSize: sp(ctx, 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              // Celebrate Eid chip
-              Container(
+          // ── Search + festival chip ───────────────────────────────────────
+          Row(children: [
+            Expanded(
+              child: Container(
                 height: 50,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFEEEEEE)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: C.saffron,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.star,
-                          color: Colors.white, size: 16),
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Celebrate',
-                            style: TextStyle(
-                              fontSize: sp(ctx, 11),
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A8FD6),
-                            )),
-                        Text('Diwali',
-                            style: TextStyle(
-                              fontSize: sp(ctx, 11),
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF3A8FD6),
-                            )),
-                      ],
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(0, 0, 0, 0.04),
+                      blurRadius: 10,
+                      offset: Offset(0, 3),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // ── Stat cards ───────────────────────────────────────────────────
-          Row(children: [
-            Expanded(
-              child: _MiniStatCard(
-                icon: Icons.group_outlined,
-                iconColor: const Color(0xFFF5A623),
-                label: 'Groups',
-                value: '0',
+                child: Row(children: [
+                  const Icon(Icons.search, color: Color(0xFFAAAAAA), size: 20),
+                  const SizedBox(width: 10),
+                  Text('Search for "groups"',
+                      style: TextStyle(
+                          color: const Color(0xFFAAAAAA),
+                          fontSize: sp(ctx, 13))),
+                ]),
               ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _MiniStatCard(
-                icon: Icons.arrow_upward_rounded,
-                iconColor: const Color(0xFFE05A4E),
-                label: 'You Owe',
-                value: '₹0',
-                valueColor: const Color(0xFFE05A4E),
+            const SizedBox(width: 10),
+            // Festival chip — repurposable ad/promo slot
+            Container(
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFEEEEEE)),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _MiniStatCard(
-                icon: Icons.arrow_downward_rounded,
-                iconColor: const Color(0xFF2ECC71),
-                label: 'Owed to You',
-                value: '₹0',
-                valueColor: const Color(0xFF2ECC71),
-              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5A623),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: const Icon(Icons.star, color: Colors.white, size: 15),
+                ),
+                const SizedBox(width: 7),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Celebrate',
+                        style: TextStyle(
+                          fontSize: sp(ctx, 10),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF3A8FD6),
+                        )),
+                    Text('Diwali',
+                        style: TextStyle(
+                          fontSize: sp(ctx, 10),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF3A8FD6),
+                        )),
+                  ],
+                ),
+              ]),
             ),
           ]),
 
           const SizedBox(height: 14),
 
+          // ── Stat cards ───────────────────────────────────────────────────
+          Row(children: [
+            Expanded(child: _StatCard(
+              icon: Icons.group_outlined,
+              iconColor: const Color(0xFFF5A623),
+              label: 'Groups', value: '0',
+            )),
+            const SizedBox(width: 8),
+            Expanded(child: _StatCard(
+              icon: Icons.arrow_upward_rounded,
+              iconColor: const Color(0xFFE05A4E),
+              label: 'You Owe', value: '₹0',
+              valueColor: const Color(0xFFE05A4E),
+            )),
+            const SizedBox(width: 8),
+            Expanded(child: _StatCard(
+              icon: Icons.arrow_downward_rounded,
+              iconColor: const Color(0xFF2ECC71),
+              label: 'Owed to You', value: '₹0',
+              valueColor: const Color(0xFF2ECC71),
+            )),
+          ]),
+
+          const SizedBox(height: 12),
+
           // ── Action buttons ───────────────────────────────────────────────
           Row(children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => goTo(ctx, const CreateGroupScreen()),
-                child: Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5A623), // orange
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.add_rounded,
-                          color: Colors.white, size: 20),
-                      const SizedBox(width: 6),
-                      Text('New Group',
-                          style: TextStyle(
-                            fontSize: sp(ctx, 14),
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          )),
-                    ],
-                  ),
+            Expanded(child: GestureDetector(
+              onTap: () => goTo(ctx, const CreateGroupScreen()),
+              child: Container(
+                height: 52,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5A623),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                    const SizedBox(width: 6),
+                    Text('New Group',
+                        style: TextStyle(
+                          fontSize: sp(ctx, 14),
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        )),
+                  ],
                 ),
               ),
-            ),
+            )),
             const SizedBox(width: 10),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => goTo(ctx, const JoinGroupScreen()),
-                child: Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFE0E0E0)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.link_rounded,
-                          color: Color(0xFF888888), size: 18),
-                      const SizedBox(width: 6),
-                      Text('Join Group',
-                          style: TextStyle(
-                            fontSize: sp(ctx, 14),
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF555555),
-                          )),
-                    ],
-                  ),
+            Expanded(child: GestureDetector(
+              onTap: () => goTo(ctx, const JoinGroupScreen()),
+              child: Container(
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFFDDDDDD)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.link_rounded,
+                        color: Color(0xFF888888), size: 18),
+                    const SizedBox(width: 6),
+                    Text('Join Group',
+                        style: TextStyle(
+                          fontSize: sp(ctx, 14),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF555555),
+                        )),
+                  ],
                 ),
               ),
-            ),
+            )),
           ]),
 
           const SizedBox(height: 20),
 
-          // ── YOUR GROUPS header ───────────────────────────────────────────
+          // ── YOUR GROUPS ──────────────────────────────────────────────────
           Row(children: [
             Container(
-              width: 3,
-              height: 14,
+              width: 3, height: 14,
               decoration: BoxDecoration(
-                color: C.saffron,
+                color: const Color(0xFFF5A623),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              'YOUR GROUPS',
-              style: TextStyle(
-                fontSize: sp(ctx, 10),
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF888888),
-                letterSpacing: 1.4,
-              ),
-            ),
+            Text('YOUR GROUPS',
+                style: TextStyle(
+                  fontSize: sp(ctx, 10),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF888888),
+                  letterSpacing: 1.4,
+                )),
             const Spacer(),
-            Text(
-              'See all',
-              style: TextStyle(
-                fontSize: sp(ctx, 11),
-                color: C.saffron,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text('See all',
+                style: TextStyle(
+                  fontSize: sp(ctx, 11),
+                  color: const Color(0xFFF5A623),
+                  fontWeight: FontWeight.w600,
+                )),
           ]),
 
           const SizedBox(height: 12),
@@ -507,28 +485,23 @@ class _BiskyTab extends StatelessWidget {
           // ── Empty state card ─────────────────────────────────────────────
           Container(
             width: double.infinity,
-            padding:
-                const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: const Color(0xFFEEEEEE)),
             ),
             child: Column(children: [
-              // Indian flag dots
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    ColorDot(C.flagSaffron),
-                    SizedBox(width: 5),
-                    ColorDot(C.flagWhite),
-                    SizedBox(width: 5),
-                    ColorDot(C.flagGreen),
-                  ]),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
+                ColorDot(C.flagSaffron),
+                SizedBox(width: 5),
+                ColorDot(C.flagWhite),
+                SizedBox(width: 5),
+                ColorDot(C.flagGreen),
+              ]),
               const SizedBox(height: 16),
               Container(
-                width: 64,
-                height: 64,
+                width: 64, height: 64,
                 decoration: const BoxDecoration(
                   color: Color(0xFFFFF3E0),
                   shape: BoxShape.circle,
@@ -555,6 +528,43 @@ class _BiskyTab extends StatelessWidget {
               ),
             ]),
           ),
+
+          const SizedBox(height: 20),
+
+          // ══════════════════════════════════════════════════════════════════
+          // AD SPACE — reserved slot for future banner ads
+          // Replace the child with your AdWidget / AdMob banner when ready.
+          // ══════════════════════════════════════════════════════════════════
+          Container(
+            width: double.infinity,
+            height: 72,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFDDDDDD),
+                // dashed effect via strokeAlign isn't native; use a solid
+                // light border as placeholder
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.campaign_outlined,
+                    color: Color(0xFFCCCCCC), size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Ad space · 320 × 50',
+                  style: TextStyle(
+                    fontSize: sp(ctx, 11),
+                    color: const Color(0xFFCCCCCC),
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -562,16 +572,16 @@ class _BiskyTab extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Small stat card widget used in the 3-up row
+// Stat card
 // ─────────────────────────────────────────────────────────────────────────────
-class _MiniStatCard extends StatelessWidget {
+class _StatCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final String label;
   final String value;
   final Color? valueColor;
 
-  const _MiniStatCard({
+  const _StatCard({
     required this.icon,
     required this.iconColor,
     required this.label,
@@ -588,30 +598,23 @@ class _MiniStatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFEEEEEE)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: iconColor, size: 20),
-          const SizedBox(height: 8),
-          Text(
-            value,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(icon, color: iconColor, size: 20),
+        const SizedBox(height: 8),
+        Text(value,
             style: TextStyle(
               fontSize: sp(ctx, 16),
               fontWeight: FontWeight.w800,
               color: valueColor ?? const Color(0xFF1A1A1A),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
+            )),
+        const SizedBox(height: 2),
+        Text(label,
             style: TextStyle(
               fontSize: sp(ctx, 10),
               color: const Color(0xFF999999),
               fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
+            )),
+      ]),
     );
   }
 }
